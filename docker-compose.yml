@@ -5,6 +5,10 @@ services:
     container_name: devops-production-lab
     expose:
       - "5000"
+    environment:
+      DATABASE_URL: postgresql://devops:devops_password@db:5432/devops_lab
+    depends_on:
+      - db
 
   nginx:
     image: nginx:alpine
@@ -15,3 +19,16 @@ services:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - app
+
+  db:
+    image: postgres:16-alpine
+    container_name: devops-postgres
+    environment:
+      POSTGRES_DB: devops_lab
+      POSTGRES_USER: devops
+      POSTGRES_PASSWORD: devops_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
