@@ -1,0 +1,30 @@
+---
+- name: Configure DevOps Lab
+  hosts: local
+  become: true
+
+  tasks:
+    - name: Create DevOps lab directory
+      ansible.builtin.file:
+        path: /opt/devops-lab
+        state: directory
+        mode: "0755"
+
+    - name: Create DevOps lab configuration file
+      ansible.builtin.copy:
+        content: |
+          DevOps Production Lab
+          Managed by Ansible
+        dest: /opt/devops-lab/config.txt
+        mode: "0644"
+
+    - name: Ensure curl is installed
+      community.general.pacman:
+        name: curl
+        state: present
+        update_cache: true
+    - name: Ensure Docker service is running
+      ansible.builtin.systemd:
+        name: docker
+        state: started
+        enabled: true
