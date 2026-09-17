@@ -1,0 +1,35 @@
+services:
+  prometheus:
+    image: prom/prometheus
+    container_name: devops-prometheus
+    networks:
+      - monitoring
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    networks:
+      - monitoring
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+
+  grafana:
+    image: grafana/grafana
+    container_name: devops-grafana
+    networks:
+      - monitoring
+    ports:
+      - "3000:3000"
+
+networks:
+  monitoring:
+    external: true
