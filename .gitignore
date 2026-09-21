@@ -4,3 +4,6 @@
 *.tfstate.*
 crash.log
 crash.*.log
+
+# Local Grafana backup
+monitoring/grafana-backup/

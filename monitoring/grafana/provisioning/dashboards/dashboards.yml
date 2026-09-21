@@ -1,0 +1,12 @@
+apiVersion: 1
+
+providers:
+  - name: 'DevOps Production Lab'
+    orgId: 1
+    folder: 'DevOps Production Lab'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: false
+    options:
+      path: /etc/grafana/dashboards

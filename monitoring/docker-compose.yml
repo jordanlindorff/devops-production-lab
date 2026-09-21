@@ -8,7 +8,7 @@ services:
       - "9090:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-
+      - prometheus_data:/prometheus
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: cadvisor
@@ -29,7 +29,17 @@ services:
       - monitoring
     ports:
       - "3000:3000"
-
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/etc/grafana/dashboards:ro
 networks:
   monitoring:
+    external: true
+volumes:
+  grafana_data:
+    external: true
+    name: devops-grafana-data
+  prometheus_data:
+    name: devops-prometheus-data
     external: true
