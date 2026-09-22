@@ -12,6 +12,21 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: devops_lab
+          POSTGRES_USER: devops
+          POSTGRES_PASSWORD: devops_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U devops -d devops_lab"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,6 +41,23 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r app/requirements.txt
 
+      - name: Initialize PostgreSQL database
+        env:
+          PGPASSWORD: devops_password
+        run: |
+          psql -h localhost -U devops -d devops_lab -c "
+            CREATE TABLE app_status (
+              id SERIAL PRIMARY KEY,
+              message TEXT NOT NULL,
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+          "
+
+          psql -h localhost -U devops -d devops_lab -c "
+            INSERT INTO app_status (message)
+            VALUES ('DevOps Production Lab CI test successful!');
+          "
+
       - name: Check Python syntax
         run: python -m py_compile app/app.py
 
@@ -37,7 +69,8 @@ jobs:
           docker run -d \
             --name devops-production-lab-ci \
             -p 5000:5000 \
-            -e DATABASE_URL=postgresql://devops:devops_password@localhost:5432/devops_lab \
+            --add-host=host.docker.internal:host-gateway \
+            -e DATABASE_URL=postgresql://devops:devops_password@host.docker.internal:5432/devops_lab \
             devops-production-lab-ci
 
       - name: Verify Docker container is running
@@ -45,6 +78,12 @@ jobs:
           sleep 3
           docker ps
           docker inspect -f '{{.State.Running}}' devops-production-lab-ci | grep true
+
+      - name: Test Flask and PostgreSQL integration
+        run: |
+          RESPONSE=$(curl --fail http://localhost:5000)
+          echo "Application response: $RESPONSE"
+          echo "$RESPONSE" | grep "DevOps Production Lab CI test successful!"
 
       - name: Stop test container
         if: always()
