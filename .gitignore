@@ -7,3 +7,7 @@ crash.*.log
 
 # Local Grafana backup
 monitoring/grafana-backup/
+
+# Python
+__pycache__/
+*.pyc
