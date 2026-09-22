@@ -31,3 +31,21 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t devops-production-lab-ci ./app
+
+      - name: Start Docker container
+        run: |
+          docker run -d \
+            --name devops-production-lab-ci \
+            -p 5000:5000 \
+            -e DATABASE_URL=postgresql://devops:devops_password@localhost:5432/devops_lab \
+            devops-production-lab-ci
+
+      - name: Verify Docker container is running
+        run: |
+          sleep 3
+          docker ps
+          docker inspect -f '{{.State.Running}}' devops-production-lab-ci | grep true
+
+      - name: Stop test container
+        if: always()
+        run: docker rm -f devops-production-lab-ci
